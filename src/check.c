@@ -155,10 +155,8 @@ static int bad_name(DOS_FILE * file)
     const unsigned char *name = file->dir_ent.name;
     const unsigned char *ext = name + 8;
 
-    /* Do not complain about (and auto-correct) the extended attribute files
-     * of OS/2. */
-    if (strncmp((const char *)name, "EA DATA  SF", 11) == 0 ||
-	strncmp((const char *)name, "WP ROOT  SF", 11) == 0)
+    /* do not check synthetic FAT32 root entry */
+    if (!file->offset)
 	return 0;
 
     /* check if we have neither a long filename nor a short name */
@@ -180,24 +178,29 @@ static int bad_name(DOS_FILE * file)
 	    return 1;
     }
 
-    spc = 0;
-    for (i = 0; i < 8; i++) {
-	if (name[i] == ' ')
-	    spc = 1;
-	else if (spc)
-	    /* non-space after a space not allowed, space terminates the name
-	     * part */
-	    return 1;
-    }
+    if (name[0] == ' ')
+	return 1;
 
-    spc = 0;
-    for (i = 0; i < 3; i++) {
-	if (ext[i] == ' ')
-	    spc = 1;
-	else if (spc)
-	    /* non-space after a space not allowed, space terminates the ext
-	     * part */
-	    return 1;
+    if (no_spaces_in_sfns) {
+	spc = 0;
+	for (i = 0; i < 8; i++) {
+	    if (name[i] == ' ')
+		spc = 1;
+	    else if (spc)
+		/* non-space after a space not allowed, space terminates the name
+		 * part */
+		return 1;
+	}
+
+	spc = 0;
+	for (i = 0; i < 3; i++) {
+	    if (ext[i] == ' ')
+		spc = 1;
+	    else if (spc)
+		/* non-space after a space not allowed, space terminates the ext
+		 * part */
+		return 1;
+	}
     }
 
     /* Under GEMDOS, chars >= 128 are never allowed. */

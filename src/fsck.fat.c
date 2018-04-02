@@ -44,6 +44,7 @@
 #include "charconv.h"
 
 int rw = 0, list = 0, test = 0, verbose = 0;
+int no_spaces_in_sfns = 0;
 int boot_only = 0;
 unsigned n_files = 0;
 void *mem_queue = NULL;
@@ -74,6 +75,7 @@ static void usage(char *name, int exitval)
     fprintf(stderr, "  -n              no-op, check non-interactively without changing\n");
     fprintf(stderr, "  -p              same as -a, for compat with other *fsck\n");
     fprintf(stderr, "  -r              interactively repair the filesystem (default)\n");
+    fprintf(stderr, "  -S              disallow spaces in the middle of short file names\n");
     fprintf(stderr, "  -t              test for bad clusters\n");
     fprintf(stderr, "  -u PATH         try to undelete (non-directory) file that was named PATH (can be\n");
     fprintf(stderr, "                    given multiple times)\n");
@@ -112,7 +114,7 @@ int main(int argc, char **argv)
     rw = interactive = 1;
     check_atari();
 
-    while ((c = getopt_long(argc, argv, "Aac:d:bflnprtu:vVwy",
+    while ((c = getopt_long(argc, argv, "Aac:d:bflnprStu:vVwy",
 				    long_options, NULL)) != -1)
 	switch (c) {
 	case 'A':		/* toggle Atari format */
@@ -149,6 +151,9 @@ int main(int argc, char **argv)
 	case 'r':
 	    rw = 1;
 	    interactive = 1;
+	    break;
+	case 'S':
+	    no_spaces_in_sfns = 1;
 	    break;
 	case 't':
 	    test = 1;
